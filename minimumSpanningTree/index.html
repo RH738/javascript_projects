@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="bower_components/p5.js/lib/p5.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+        var r = 0
+        var dim
+
+        var vertices = []
+        var reached = []
+        var unreached = []
+        var connections = []
+
+        function setup() {
+            createCanvas(500, 500, WEBGL)
+            background(255)
+            dim = width / 3
+            for (var i = 0; i < 100; i++) {
+                vertices[i] = createVector(
+                    random(dim, -dim),
+                    random(dim, -dim),
+                    random(dim, -dim))
+            }
+            computeMinTree()
+        }
+
+
+        function draw() {
+            r += 0.01
+            rotate(r, createVector(0, 1, 0))
+            background(255)
+            drawTree(connections, vertices)
+        }
+
+        function computeMinTree() {
+            reached = []
+            unreached = []
+            connections = []
+
+
+            unreached = vertices.slice()
+
+            var start = unreached[0]
+            reached.push(unreached[0])
+            unreached.splice(0, 1)
+
+            while (unreached.length > 0) {
+                var record = 10000
+                var closestReached
+                var closestUnreached
+                for (var i = 0; i < reached.length; i++) {
+                    for (var j = 0; j < unreached.length; j++) {
+                        var distance = p5.Vector.dist(reached[i], unreached[j])
+                        if (distance < record) {
+                            record = distance
+                            closestUnreached = j
+                            closestReached = i
+                        }
+                    }
+                }
+                if (closestUnreached !== undefined) {
+                    connections.push({
+                        startPoint: reached[closestReached],
+                        endPoint: unreached[closestUnreached],
+                    })
+                    reached.push(unreached[closestUnreached])
+                    unreached.splice(closestUnreached, 1)
+                }
+            }
+        }
+
+        function drawTree(connections, vertices) {
+            for (var i = 0; i < vertices.length; i++) {
+                push()
+                translate(vertices[i].x, vertices[i].y, vertices[i].z)
+                rotate(-r, createVector(0, 1, 0))
+                ellipse(0, 0, 10, 10)
+                pop()
+            }
+            for (var i = 0; i < connections.length; i++) {
+                beginShape()
+                vertex(connections[i].startPoint.x, connections[i].startPoint.y, connections[i].startPoint.z)
+                vertex(connections[i].endPoint.x, connections[i].endPoint.y, connections[i].endPoint.z)
+                endShape(CLOSE)
+            }
+        }
+    </script>
+    <a href="../index.html">go back</a>
+</body>
+
+</html>
